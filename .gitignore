@@ -1,0 +1,34 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Output / Build
+out/
+dist/
+build/
+*.vsix
+
+# VS Code
+.vscode-test/
+.history/
+*.vsix
+
+# Environment / Secret
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.sample
+.env.template
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log

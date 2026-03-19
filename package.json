@@ -1,0 +1,60 @@
+{
+  "name": "custom-panel-extension",
+  "displayName": "Custom Panel",
+  "description": "A customizable panel with adjustable height, background color, and text editing — displayed above the Outline panel.",
+  "version": "0.0.6",
+  "publisher": "antigravity",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antigravity-ai/custom-panel-extension.git"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "panel": []
+    },
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "customPanel.notepad",
+          "name": "Custom Panel",
+          "visibility": "visible"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "customPanel.changeBackgroundColor",
+        "title": "Custom Panel: Change Background Color"
+      },
+      {
+        "command": "customPanel.clearText",
+        "title": "Custom Panel: Clear Text"
+      },
+      {
+        "command": "customPanel.resetSettings",
+        "title": "Custom Panel: Reset Settings"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}
