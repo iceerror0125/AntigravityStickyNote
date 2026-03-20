@@ -1,15 +1,17 @@
 # Custom Panel Extension
 
-A customizable panel extension for Antigravity/VS Code that adds a resizable panel above the **Outline** view in the Explorer sidebar.
+A customizable panel extension for Antigravity/VS Code that adds a resizable notepad/panel above the **Outline** view in the Explorer sidebar.
 
 ## Features
 
-- 🎨 **Change Background Color**: Pick from 12 preset colors or use the color picker for any custom color
-- ✍️ **Write Text**: Built-in text editor with character count
-- 💾 **Auto-Save**: Text and color preferences are automatically saved across sessions
-- 🔤 **Bold Toggle**: Toggle bold text formatting
-- 🗑 **Clear Text**: Quickly clear all written text
-- 🔄 **Reset Settings**: Reset everything to defaults
+- 🎨 **Theme Saving**: Pick a background and text color, then click `+` to save it as a theme. Click any saved theme swatch to apply it instantly!
+- 🎨 **Inline Text Coloring**: Select any text and click the `A` inline color button to highlight or color specific words.
+- 🖋️ **Direct Color Input**: Use the Native Color Picker or simply paste HEX codes directly into the text inputs.
+- ✍️ **Write Text**: Built-in rich text editor with character count and font settings.
+- 💾 **Auto-Save**: Text and color preferences are automatically saved across sessions.
+- 🔤 **Formatting**: Toggle bold, italic, and underline text formatting.
+- 🗑 **Clear Text**: Quickly clear all written text.
+- 🔄 **Reset Settings**: Reset everything to defaults.
 
 ## Commands
 
@@ -29,7 +31,7 @@ A customizable panel extension for Antigravity/VS Code that adds a resizable pan
 
 2. Package as VSIX (optional):
    ```bash
-   npx @vscode/vsce package
+   npx vsce package
    ```
 
 3. Install the `.vsix` file in Antigravity/VS Code via "Install from VSIX..."

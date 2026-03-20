@@ -190,20 +190,39 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
         }
 
         .color-well {
-            width: 18px;
-            height: 18px;
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.2);
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            background: none;
             cursor: pointer;
-            position: relative;
+            outline: none;
         }
 
-        .hidden-input {
-            position: absolute;
-            opacity: 0;
-            width: 1px;
-            height: 1px;
-            pointer-events: none;
+        .color-well::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-well::-webkit-color-swatch {
+            border: none;
+            border-radius: 3px;
+        }
+
+        .hex-input {
+            width: 58px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 3px;
+            font-size: 10px;
+            padding: 2px 4px;
+            outline: none;
+            text-transform: uppercase;
+        }
+        
+        .hex-input::placeholder {
+            color: rgba(255,255,255,0.3);
         }
 
         /* ===== Text Area ===== */
@@ -233,6 +252,44 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
             content: 'Write here...';
             color: rgba(255, 255, 255, 0.3);
             pointer-events: none;
+        }
+
+        /* Saved Colors Controls */
+        .saved-colors {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .saved-color-swatch {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .saved-color-swatch:hover {
+            transform: scale(1.2);
+            border-color: #fff;
+        }
+
+        .add-color-btn {
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1;
+            padding: 0;
+            margin-left: 4px;
         }
 
         /* ===== Status Bar ===== */
@@ -274,21 +331,30 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
                     <button class="toolbar-btn" id="btnItalic" title="Italic (Ctrl+I)"><i>I</i></button>
                     <button class="toolbar-btn" id="btnUnderline" title="Underline (Ctrl+U)"><u>U</u></button>
                     <div class="toolbar-separator"></div>
+                    <div class="toolbar-btn" style="position: relative; overflow: hidden;" title="Color Selected Text">
+                        <span style="font-family: serif; font-weight: bold; pointer-events: none;">A</span>
+                        <div id="inlineColorIndicator" style="position: absolute; bottom: 3px; left: 5px; right: 5px; height: 3px; background-color: #ff5500; pointer-events: none; border-radius: 1px;"></div>
+                        <input type="color" id="inlineColorPicker" value="#ff5500" style="position: absolute; top:-5px; left:-5px; width:40px; height:40px; opacity: 0; cursor: pointer;">
+                    </div>
+                    <div class="toolbar-separator"></div>
                     <button class="toolbar-btn" id="btnClear" title="Clear">🗑</button>
                 </div>
             </div>
             <div class="toolbar-row" style="padding-top: 0; background: rgba(0,0,0,0.1);">
                 <div class="toolbar-group">
                     <div class="color-control">
-                        <span>Background:</span>
-                        <div id="bgWell" class="color-well" title="Background Color"></div>
-                        <input type="color" id="bgColor" class="hidden-input">
+                        <span>Bg:</span>
+                        <input type="color" id="bgColorPicker" class="color-well" title="Pick Background Color">
+                        <input type="text" id="bgColorHex" class="hex-input" spellcheck="false" maxlength="7" placeholder="#000000">
                     </div>
-                    <div class="color-control" style="margin-left: 10px;">
+                    <div class="color-control" style="margin-left: 8px;">
                         <span>Text:</span>
-                        <div id="fgWell" class="color-well" title="Font Color"></div>
-                        <input type="color" id="fgColor" class="hidden-input">
+                        <input type="color" id="fgColorPicker" class="color-well" title="Pick Text Color">
+                        <input type="text" id="fgColorHex" class="hex-input" spellcheck="false" maxlength="7" placeholder="#FFFFFF">
                     </div>
+                    <div class="toolbar-separator" style="margin: 0 8px;"></div>
+                    <div class="saved-colors" id="savedColors"></div>
+                    <button class="toolbar-btn add-color-btn" id="btnAddColor" title="Save current colors (Right-click swatch to remove)">+</button>
                 </div>
             </div>
         </div>
@@ -311,27 +377,32 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
         const textArea = document.getElementById('textArea');
         const fontFamily = document.getElementById('fontFamily');
         const fontSize = document.getElementById('fontSize');
-        const bgWell = document.getElementById('bgWell');
-        const bgColor = document.getElementById('bgColor');
-        const fgWell = document.getElementById('fgWell');
-        const fgColor = document.getElementById('fgColor');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const bgColorHex = document.getElementById('bgColorHex');
+        const fgColorPicker = document.getElementById('fgColorPicker');
+        const fgColorHex = document.getElementById('fgColorHex');
         const charCount = document.getElementById('charCount');
         const btnBold = document.getElementById('btnBold');
         const btnItalic = document.getElementById('btnItalic');
         const btnUnderline = document.getElementById('btnUnderline');
+        const inlineColorPicker = document.getElementById('inlineColorPicker');
+        const inlineColorIndicator = document.getElementById('inlineColorIndicator');
         const btnClear = document.getElementById('btnClear');
+        const btnAddColor = document.getElementById('btnAddColor');
+        
+        let savedThemes = [];
 
         // Apply state (for reset only)
         function updateUI(state) {
             if (state.bgColor) {
                 panel.style.backgroundColor = state.bgColor;
-                bgWell.style.backgroundColor = state.bgColor;
-                bgColor.value = state.bgColor;
+                bgColorPicker.value = state.bgColor;
+                bgColorHex.value = state.bgColor;
             }
             if (state.fontColor) {
                 textArea.style.color = state.fontColor;
-                fgWell.style.backgroundColor = state.fontColor;
-                fgColor.value = state.fontColor;
+                fgColorPicker.value = state.fontColor;
+                fgColorHex.value = state.fontColor;
             }
             if (state.fontSize) {
                 textArea.style.fontSize = state.fontSize + 'px';
@@ -344,6 +415,11 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
             if (state.textContent !== undefined) {
                 textArea.innerHTML = state.textContent;
                 updateCharCount();
+            }
+            if (state.savedThemes && Array.isArray(state.savedThemes)) {
+                // Validate to avoid crash from older string-array saves
+                savedThemes = state.savedThemes.filter(t => t && typeof t === 'object' && typeof t.bg === 'string');
+                renderSavedThemes();
             }
         }
 
@@ -361,16 +437,58 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
             btnBold.classList.toggle('active', document.queryCommandState('bold'));
             btnItalic.classList.toggle('active', document.queryCommandState('italic'));
             btnUnderline.classList.toggle('active', document.queryCommandState('underline'));
+            
+            // Note: Document.queryCommandValue('foreColor') returns rgb() string, we wouldn't map it perfectly to hex without a helper,
+            // so we skip active color feedback for simplicity, but basic selection works well.
         }
 
         // ===== Save Settings Helper =====
         function saveSettings() {
             vscode.postMessage({
                 type: 'saveSettings',
-                bgColor: bgColor.value,
-                fontColor: fgColor.value,
+                bgColor: bgColorPicker.value,
+                fontColor: fgColorPicker.value,
                 fontSize: parseInt(fontSize.value, 10),
-                fontFamily: fontFamily.value
+                fontFamily: fontFamily.value,
+                savedThemes: savedThemes
+            });
+        }
+
+        function renderSavedThemes() {
+            const container = document.getElementById('savedColors');
+            container.innerHTML = '';
+            savedThemes.forEach((theme, index) => {
+                const swatch = document.createElement('div');
+                swatch.className = 'saved-color-swatch';
+                swatch.style.backgroundColor = theme.bg;
+                swatch.title = \`Bg: \${theme.bg}, Text: \${theme.fg}\\nRight-click to remove\`;
+                
+                const inner = document.createElement('div');
+                inner.style.width = '6px';
+                inner.style.height = '6px';
+                inner.style.borderRadius = '50%';
+                inner.style.backgroundColor = theme.fg;
+                swatch.appendChild(inner);
+                
+                swatch.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    savedThemes.splice(index, 1);
+                    saveSettings();
+                    renderSavedThemes();
+                });
+
+                swatch.addEventListener('click', () => {
+                    panel.style.backgroundColor = theme.bg;
+                    bgColorPicker.value = theme.bg;
+                    bgColorHex.value = theme.bg;
+                    
+                    textArea.style.color = theme.fg;
+                    fgColorPicker.value = theme.fg;
+                    fgColorHex.value = theme.fg;
+                    
+                    saveSettings();
+                });
+                container.appendChild(swatch);
             });
         }
 
@@ -396,24 +514,90 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
             saveSettings();
         });
 
-        bgWell.addEventListener('click', () => bgColor.click());
-        bgColor.addEventListener('input', () => {
-            panel.style.backgroundColor = bgColor.value;
-            bgWell.style.backgroundColor = bgColor.value;
+        function updateColorBg(color) {
+            panel.style.backgroundColor = color;
+            bgColorPicker.value = color;
+            bgColorHex.value = color;
+        }
+
+        function updateColorFg(color) {
+            textArea.style.color = color;
+            fgColorPicker.value = color;
+            fgColorHex.value = color;
+        }
+
+        bgColorPicker.addEventListener('input', (e) => {
+            updateColorBg(e.target.value);
             saveSettings();
         });
 
-        fgWell.addEventListener('click', () => fgColor.click());
-        fgColor.addEventListener('input', () => {
-            textArea.style.color = fgColor.value;
-            fgWell.style.backgroundColor = fgColor.value;
+        bgColorHex.addEventListener('change', (e) => {
+            let val = e.target.value;
+            if(!val.startsWith('#')) val = '#' + val;
+            if(/^#[0-9A-Fa-f]{6}$/i.test(val) || /^#[0-9A-Fa-f]{3}$/i.test(val)) {
+                // Ensure 6 chars for color picker input expectation
+                if(val.length === 4) {
+                    val = '#' + val[1]+val[1]+val[2]+val[2]+val[3]+val[3];
+                }
+                updateColorBg(val);
+                saveSettings();
+            } else {
+                e.target.value = bgColorPicker.value; // revert
+            }
+        });
+
+        fgColorPicker.addEventListener('input', (e) => {
+            updateColorFg(e.target.value);
             saveSettings();
+        });
+
+        fgColorHex.addEventListener('change', (e) => {
+            let val = e.target.value;
+            if(!val.startsWith('#')) val = '#' + val;
+            if(/^#[0-9A-Fa-f]{6}$/i.test(val) || /^#[0-9A-Fa-f]{3}$/i.test(val)) {
+                if(val.length === 4) {
+                    val = '#' + val[1]+val[1]+val[2]+val[2]+val[3]+val[3];
+                }
+                updateColorFg(val);
+                saveSettings();
+            } else {
+                e.target.value = fgColorPicker.value; // revert
+            }
+        });
+
+        btnAddColor.addEventListener('click', () => {
+            const theme = { bg: bgColorPicker.value, fg: fgColorPicker.value };
+            // Check if exact theme already exists
+            const exists = savedThemes.some(t => {
+                if (!t || !t.bg || !t.fg) return false;
+                return t.bg.toLowerCase() === theme.bg.toLowerCase() && t.fg.toLowerCase() === theme.fg.toLowerCase();
+            });
+            if (!exists) {
+                savedThemes.push(theme);
+                if (savedThemes.length > 8) {
+                    savedThemes.shift();
+                }
+                renderSavedThemes();
+                saveSettings();
+            }
         });
 
         // Formatting buttons
         btnBold.addEventListener('click', () => execFormat('bold'));
         btnItalic.addEventListener('click', () => execFormat('italic'));
         btnUnderline.addEventListener('click', () => execFormat('underline'));
+
+        inlineColorPicker.addEventListener('input', (e) => {
+            const color = e.target.value;
+            inlineColorIndicator.style.backgroundColor = color;
+            execFormat('foreColor', color);
+            
+            // A bit of a workaround because picking color steals focus
+            vscode.postMessage({
+                type: 'saveText',
+                value: textArea.innerHTML
+            });
+        });
 
         btnClear.addEventListener('click', () => {
             textArea.innerHTML = '';
@@ -465,12 +649,8 @@ export class CustomPanelViewProvider implements vscode.WebviewViewProvider {
         });
 
         // Initialize default UI
-        panel.style.backgroundColor = '#1a1b2e';
-        bgWell.style.backgroundColor = '#1a1b2e';
-        bgColor.value = '#1a1b2e';
-        textArea.style.color = '#ffffff';
-        fgWell.style.backgroundColor = '#ffffff';
-        fgColor.value = '#ffffff';
+        updateColorBg('#1a1b2e');
+        updateColorFg('#ffffff');
     </script>
 </body>
 </html>`;
