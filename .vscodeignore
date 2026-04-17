@@ -8,3 +8,12 @@ src/**
 **/*.ts
 !out/**
 node_modules/**
+webview-ui/node_modules/**
+webview-ui/src/**
+webview-ui/*.json
+webview-ui/*.md
+webview-ui/*.config.js
+webview-ui/*.html
+webview-ui/.gitignore
+webview-ui/public/**
+fix_svg.js

@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import { CustomPanelViewProvider } from './CustomPanelViewProvider';
+import { StorageService } from './services/StorageService';
+import { NoteService } from './services/NoteService';
 
 export function activate(context: vscode.ExtensionContext) {
-    const provider = new CustomPanelViewProvider(context.extensionUri, context);
+    const storageService = new StorageService(context);
+    const noteService = new NoteService(storageService);
+    const provider = new CustomPanelViewProvider(context.extensionUri, storageService, noteService);
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(

@@ -2,7 +2,7 @@
   "name": "custom-panel-extension",
   "displayName": "Custom Panel",
   "description": "A customizable panel with adjustable height, background color, and text editing — displayed above the Outline panel.",
-  "version": "0.0.9",
+  "version": "0.0.13",
   "publisher": "antigravity",
   "license": "MIT",
   "engines": {
